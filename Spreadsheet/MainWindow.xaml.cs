@@ -23,6 +23,9 @@ namespace Spreadsheet
         public MainWindow()
         {
             InitializeComponent();
+            Tree<ArithmExpr> t = new Tree<ArithmExpr>();
+            MessageBox.Show(t.calculate(new ArithmExpr("2+2")).ToString());
+
         }
     }
 }

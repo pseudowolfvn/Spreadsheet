@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Numerics;
 
 namespace Spreadsheet
 {
-    class ArithmExpr
+    enum ArithmOps { Plus, Minus, Multiply, Div, Mod };
+    class ArithmExpr : Expression
     {
-        string expression;
-        int position;
-        int openedBrackets;
-        Lexem prevLexem;
-        Lexem currLexem;
+        public override Type valueType()
+        {
+            return typeof(BigInteger);
+        }
         void skipBlanks()
         {
             while (!endOfExpr() && Char.IsWhiteSpace(expression[position])) position++;
@@ -24,18 +25,14 @@ namespace Spreadsheet
             {
                 if (Char.IsDigit(expression[position]))
                 {
-                    bool xOnce = true;
                     string value = "";
                     while (!endOfExpr() 
-                        && (Char.IsDigit(expression[position]) 
-                        || (expression[position] == 'x' 
-                        && xOnce)))
+                        && (Char.IsDigit(expression[position])))
                     {
-                        if (expression[position] == 'x') xOnce = false;
                         value += expression[position];
                         position++;
                     }
-                    currLexem = new Lexem(LexemType.Number, position, value);
+                    currLexem = new Lexem(LexemType.Const, position, value);
                 }
                 else
                 {
@@ -46,7 +43,7 @@ namespace Spreadsheet
                         case '/':
                         case '%':
                             if (prevLexem == null 
-                                || (prevLexem.Type != LexemType.Number && prevLexem.Type != LexemType.ClosingBracket))
+                                || (prevLexem.Type != LexemType.Const && prevLexem.Type != LexemType.ClosingBracket))
                                 throw (new BadOperator(position));
                             currLexem = new Lexem(LexemType.Binary, position, expression[position]);
                             break;
@@ -57,7 +54,7 @@ namespace Spreadsheet
                             if (prevLexem == null 
                                 || prevLexem.Type == LexemType.OpenBracket)
                                 currLexem = new Lexem(LexemType.Unary, position, expression[position]);
-                            else if (prevLexem.Type == LexemType.Number)
+                            else if (prevLexem.Type == LexemType.Const)
                                 currLexem = new Lexem(LexemType.Binary, position, expression[position]);
                             else throw (new BadOperator(position));
                             break;
@@ -82,9 +79,7 @@ namespace Spreadsheet
         {
             expression = str;
         }
-        public int OpenedBrackets { get { return openedBrackets; } }
-        public Lexem CurrLexem { get { return CurrLexem; } }
-        public Lexem NextLexem
+        public override Lexem NextLexem
         {
             get
             {

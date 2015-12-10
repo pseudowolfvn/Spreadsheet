@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Spreadsheet
 {
-    enum LexemType { OpenBracket, ClosingBracket, Unary, Binary, Number };
+    enum LexemType { OpenBracket, ClosingBracket, Unary, Binary, Const, Var };
     class Lexem
     {
         LexemType type;
