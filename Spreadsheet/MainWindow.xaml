@@ -5,8 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Spreadsheet"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="MainWindow" Height="75" Width="350">
     <Grid>
-        
+        <TextBox x:Name="textBox" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+        <Button x:Name="button" Content="=" HorizontalAlignment="Left" Margin="135,10,0,0" VerticalAlignment="Top" Width="75" Height="23" Click ="Calc"/>
+        <TextBox x:Name="textBox1" HorizontalAlignment="Left" Height="23" Margin="215,10,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
+
     </Grid>
 </Window>

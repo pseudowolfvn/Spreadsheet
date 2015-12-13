@@ -13,7 +13,8 @@ namespace Spreadsheet
         void addBinary(Lexem current)
         {
             BinaryNode bNode = new BinaryNode(current.Value, current.Position, expression.OpenedBrackets);
-            BinaryNode parent = root as BinaryNode, child = parent;
+            //BinaryNode parent = root as BinaryNode;
+            TreeNode parent = root, child = parent;
             if (root == null || root.Priority == 0 || root.Priority >= bNode.Priority)
             {
                 bNode.Left = root;
@@ -21,13 +22,23 @@ namespace Spreadsheet
             }
             else
             {
-                while (child.GetType() == typeof(BinaryNode) && child.Priority < bNode.Priority)
+                while (child != null && child.Priority < bNode.Priority)
                 {
-                    parent = child;
-                    child = (BinaryNode)parent.Right;
+                    if (child.GetType() == typeof(BinaryNode))
+                    {
+                        parent = child as BinaryNode;
+                        child = (parent as BinaryNode).Right;
+                    }
+                    else if (child.GetType() == typeof(UnaryNode))
+                    {
+                        parent = child as UnaryNode;
+                        child = (parent as UnaryNode).Child;
+                    }
+                    else break;
                 }
                 bNode.Left = child;
-                parent.Right = bNode;
+                if (parent.GetType() == typeof(BinaryNode)) (parent as BinaryNode).Right = bNode;
+                else if (parent.GetType() == typeof(UnaryNode)) (parent as UnaryNode).Child = bNode;
             }
         }
         void setRightNode(TreeNode node)
@@ -42,7 +53,7 @@ namespace Spreadsheet
             {
                 if (p.GetType() == typeof(UnaryNode))
                 {
-                    UnaryNode uNode = (UnaryNode)p;
+                    UnaryNode uNode = p as UnaryNode;
                     if (uNode.Child == null)
                     {
                         uNode.Child = node;
@@ -53,7 +64,7 @@ namespace Spreadsheet
                 }
                 else if (p.GetType() == typeof(BinaryNode))
                 {
-                    BinaryNode bNode = (BinaryNode)p;
+                    BinaryNode bNode = p as BinaryNode;
                     if (bNode.Right == null)
                     {
                         bNode.Right = node;
@@ -73,7 +84,7 @@ namespace Spreadsheet
                 switch(current.Type)
                 {
                     case LexemType.Unary:
-                        setRightNode(new UnaryNode(current.Value, current.Position));
+                        setRightNode(new UnaryNode(current.Value, current.Position, this.expression.OpenedBrackets));
                         break;
                     case LexemType.Binary:
                         addBinary(current);
@@ -93,3 +104,4 @@ namespace Spreadsheet
         }
     }
 }
+

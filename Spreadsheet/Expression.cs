@@ -16,7 +16,6 @@ namespace Spreadsheet
         public int OpenedBrackets { get { return openedBrackets; } }
         public Lexem CurrLexem { get { return CurrLexem; } }
         abstract public Lexem NextLexem { get; }
-        abstract public Type valueType(); 
     }
     
 }

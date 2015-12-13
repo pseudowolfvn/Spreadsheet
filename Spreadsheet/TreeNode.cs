@@ -49,9 +49,9 @@ namespace Spreadsheet
         {
             return op.use(child.calculate());
         }
-        public UnaryNode(string str, int pos/*, int brackets*/, TreeNode addedChild = null) : base (pos)
+        public UnaryNode(string str, int pos, int brackets, TreeNode addedChild = null) : base (pos)
         {
-            op = new Operator(str, 0/*brackets*/); // TODO : check correction of this
+            op = new Operator(str, brackets);
             child = addedChild;
         }
     }

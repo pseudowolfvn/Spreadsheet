@@ -7,13 +7,9 @@ using System.Numerics;
 
 namespace Spreadsheet
 {
-    enum ArithmOps { Plus, Minus, Multiply, Div, Mod };
+    enum ArithmOps { Plus, Minus, Multiply, Div, Mod, UnaryMinus, UnaryPlus, Dec, Inc, Pow };
     class ArithmExpr : Expression
     {
-        public override Type valueType()
-        {
-            return typeof(BigInteger);
-        }
         void skipBlanks()
         {
             while (!endOfExpr() && Char.IsWhiteSpace(expression[position])) position++;
@@ -36,32 +32,41 @@ namespace Spreadsheet
                 }
                 else
                 {
-                    switch (expression[position])
+                    var func = new String(expression.Substring(position).TakeWhile(n => Char.IsLower(n)).ToArray());
+                    position += (func.Length > 0) ? func.Length - 1: 0;
+                    string op = (func.Length > 0) ? func : expression[position].ToString();
+                    switch (op)
                     {
-                        case '+':
-                        case '*':
-                        case '/':
-                        case '%':
+                        case "*":
+                        case "/":
+                        case "div":
+                        case "%":
+                        case "mod":
+                        case "^":
                             if (prevLexem == null 
                                 || (prevLexem.Type != LexemType.Const && prevLexem.Type != LexemType.ClosingBracket))
                                 throw (new BadOperator(position));
-                            currLexem = new Lexem(LexemType.Binary, position, expression[position]);
+                            currLexem = new Lexem(LexemType.Binary, position, op);
                             break;
-                        case '!':
-                            currLexem = new Lexem(LexemType.Unary, position, expression[position]);
+                        case "+":
+                        case "-":
+                        case "inc":
+                        case "dec":
+                            //if (prevLexem == null 
+                            //    || prevLexem.Type == LexemType.OpenBracket || prevLexem.Type == LexemType.Binary)
+                            //    currLexem = new Lexem(LexemType.Unary, position, op + "U");
+                            //else if (prevLexem.Type == LexemType.Const)
+                            //    currLexem = new Lexem(LexemType.Binary, position, op);
+                            //else throw (new BadOperator(position));
+                            if (prevLexem != null 
+                                && (prevLexem.Type == LexemType.Const || prevLexem.Type == LexemType.ClosingBracket))
+                                    currLexem = new Lexem(LexemType.Binary, position, op);
+                            else currLexem = new Lexem(LexemType.Unary, position, op + "U");
                             break;
-                        case '-':
-                            if (prevLexem == null 
-                                || prevLexem.Type == LexemType.OpenBracket)
-                                currLexem = new Lexem(LexemType.Unary, position, expression[position]);
-                            else if (prevLexem.Type == LexemType.Const)
-                                currLexem = new Lexem(LexemType.Binary, position, expression[position]);
-                            else throw (new BadOperator(position));
-                            break;
-                        case '(':
+                        case "(":
                             currLexem = new Lexem(LexemType.OpenBracket, position);
                             break;
-                        case ')':
+                        case ")":
                             currLexem = new Lexem(LexemType.ClosingBracket, position);
                             break;
                         default:
