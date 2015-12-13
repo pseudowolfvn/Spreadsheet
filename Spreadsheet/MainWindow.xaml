@@ -5,11 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Spreadsheet"
         mc:Ignorable="d"
-        Title="MainWindow" Height="75" Width="350">
+        Title="MainWindow" Height="628.125" Width="1081.25">
     <Grid>
-        <TextBox x:Name="textBox" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
-        <Button x:Name="button" Content="=" HorizontalAlignment="Left" Margin="135,10,0,0" VerticalAlignment="Top" Width="75" Height="23" Click ="Calc"/>
-        <TextBox x:Name="textBox1" HorizontalAlignment="Left" Height="23" Margin="215,10,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="120"/>
-
+        <DataGrid x:Name="dataGrid" HorizontalAlignment="Left" VerticalAlignment="Top" Height="500" Width="938" Margin="10,10,0,0" CanUserAddRows="False" />
+        <Button x:Name="button" Content="Button" HorizontalAlignment="Left" Margin="10,548,0,0" VerticalAlignment="Top" Width="90" RenderTransformOrigin="0.303,0.545" Height="40" Click="OnButton1Click"/>
+        <Button x:Name="button1" Content="Button" HorizontalAlignment="Left" Margin="953,25,0,0" VerticalAlignment="Top" Width="90" Height="40" RenderTransformOrigin="0.483,0.588" Click="OnButton2Click"/>
     </Grid>
 </Window>
