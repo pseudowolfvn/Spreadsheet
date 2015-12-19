@@ -58,13 +58,23 @@ namespace Spreadsheet
     class LeafNode : TreeNode
     {
         BigInteger value;
+        string binding = "";
         public override BigInteger calculate()
         {
+            if (binding != "")
+            {
+                int index = 0;
+                while (index < binding.Length && Char.IsUpper(binding[index])) ++index;
+                string column = binding.Substring(0, index),
+                    row = binding.Substring(index);
+                return BigInteger.Parse((App.Current.MainWindow as MainWindow).Data[row, column].Value);
+            }
             return value;
         }
         public LeafNode(string val, int pos) : base(pos)
         {
-            BigInteger.TryParse(val, out value);
+            if (Char.IsUpper(val[0])) binding = val;
+            else value = BigInteger.Parse(val);
         }
         public override int Priority { get { return 0; } }
     }

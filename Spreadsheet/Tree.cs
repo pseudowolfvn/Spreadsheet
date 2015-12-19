@@ -89,7 +89,7 @@ namespace Spreadsheet
                     case LexemType.Binary:
                         addBinary(current);
                         break;
-                    case LexemType.Const:
+                    case LexemType.Const: case LexemType.Var:
                         setRightNode(new LeafNode(current.Value, current.Position));
                         break;
                 }

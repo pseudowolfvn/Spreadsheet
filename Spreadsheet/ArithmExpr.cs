@@ -32,7 +32,11 @@ namespace Spreadsheet
                 }
                 else
                 {
-                    var func = new String(expression.Substring(position).TakeWhile(n => Char.IsLower(n)).ToArray());
+                    string func = "";
+                    if (Char.IsLower(expression[position]))
+                        func = new String(expression.Substring(position).TakeWhile(n => Char.IsLower(n)).ToArray());
+                    else if (Char.IsUpper(expression[position]))
+                        func = new String(expression.Substring(position).TakeWhile(n => (Char.IsUpper(n) || Char.IsDigit(n))).ToArray());
                     position += (func.Length > 0) ? func.Length - 1: 0;
                     string op = (func.Length > 0) ? func : expression[position].ToString();
                     switch (op)
@@ -52,14 +56,10 @@ namespace Spreadsheet
                         case "-":
                         case "inc":
                         case "dec":
-                            //if (prevLexem == null 
-                            //    || prevLexem.Type == LexemType.OpenBracket || prevLexem.Type == LexemType.Binary)
-                            //    currLexem = new Lexem(LexemType.Unary, position, op + "U");
-                            //else if (prevLexem.Type == LexemType.Const)
-                            //    currLexem = new Lexem(LexemType.Binary, position, op);
-                            //else throw (new BadOperator(position));
                             if (prevLexem != null 
-                                && (prevLexem.Type == LexemType.Const || prevLexem.Type == LexemType.ClosingBracket))
+                                && (prevLexem.Type == LexemType.Const 
+                                    || prevLexem.Type == LexemType.ClosingBracket
+                                    || prevLexem.Type == LexemType.Var))
                                     currLexem = new Lexem(LexemType.Binary, position, op);
                             else currLexem = new Lexem(LexemType.Unary, position, op + "U");
                             break;
@@ -70,7 +70,10 @@ namespace Spreadsheet
                             currLexem = new Lexem(LexemType.ClosingBracket, position);
                             break;
                         default:
-                            throw (new BadOperator(position));
+                            if (Char.IsUpper(op[0])) // add deeper error handling
+                                currLexem = new Lexem(LexemType.Var, position, op);
+                            else throw (new BadOperator(position));
+                            break;
                     }
                     position++;
                 }
@@ -105,6 +108,32 @@ namespace Spreadsheet
                     return currLexem;
                 }
                 else return null;
+            }
+        }
+        private void EraseState()
+        {
+            position = 0;
+            openedBrackets = 0;
+        }
+        private void LoadState(int prior, int brackets)
+        {
+            position = prior;
+            openedBrackets = brackets;
+        }
+        public override List<Lexem> AllVars
+        {
+            get
+            {
+                List<Lexem> result = new List<Lexem>();
+                int oldPosition = position, oldBrackets = openedBrackets;
+                EraseState();
+                Lexem currLexem;
+                while ((currLexem = this.NextLexem) != null)
+                    if (currLexem.Type == LexemType.Var)
+                        result.Add(currLexem);
+                position = oldPosition;
+                LoadState(oldPosition, oldBrackets);
+                return result;
             }
         }
     }

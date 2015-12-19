@@ -31,29 +31,45 @@ namespace Spreadsheet
             set { this.value = value; }
         }
     }
-    public class ItemsRow
+    public class ItemsTable
     {
-        List<Item> item;
+        List<List<Item>> items = new List<List<Item>> { new List<Item> { new Item() } };
+        public List<List<Item>> Items { get { return items; } } 
+        public Item this[string row, string column]
+        {
+            get
+            {
+                int indexColumn = 0,
+                    indexRow = Int32.Parse(row);
+                int powBase = 1;
+                for (int i = column.Length - 1; i >= 0; --i)
+                {
+                    indexColumn += powBase * (column[i] - 'A');
+                    powBase *= 26;
+                }
+                return items[indexRow][indexColumn];
+            } 
+        }
     }
     public partial class MainWindow : Window
     {
-        List<List<Item>> data = new List<List<Item>> { new List<Item> { new Item() } };
+        ItemsTable data = new ItemsTable();
         DataTable Excel = new DataTable();
         char column = 'A';
-        public List<List<Item>> Data { get { return data; } }
+        public ItemsTable Data { get { return data; } }
         public void addRow()
         {
-            data.Add(new List<Item>(data[0].Count - 1));
-            for (int i = 0; i < data[0].Count; i++)
+            Data.Items.Add(new List<Item>(Data.Items[0].Count - 1));
+            for (int i = 0; i < Data.Items[0].Count; i++)
             {
-                data[data.Count - 1].Add(new Item());
+                Data.Items[Data.Items.Count - 1].Add(new Item());
             }
         }
         public void addColumn()
         {
-            for (int i = 0; i < data.Count; i++)
+            for (int i = 0; i < Data.Items.Count; i++)
             {
-                data[i].Add(new Item());
+                Data.Items[i].Add(new Item());
             }
         }
         public MainWindow()
@@ -83,27 +99,26 @@ namespace Spreadsheet
         {
             e.Row.Header = e.Row.GetIndex().ToString();
         }
-        private void Calc(object sender, RoutedEventArgs e)
-        {
-            Tree<ArithmExpr> t = new Tree<ArithmExpr>();
-            //textBox1.Text = t.calculate(new ArithmExpr(textBox.Text)).ToString();
-        }
 
         private void dataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
-            data[e.Row.GetIndex()][e.Column.Header.ToString()[0] - 'A'].Value = ((TextBox)e.EditingElement).Text;
+            Data[e.Row.Header.ToString(), e.Column.Header.ToString()].Value = ((TextBox)e.EditingElement).Text;
         }
+
+
 
         private void button2_Click(object sender, RoutedEventArgs e)
         {
-            string debug = "";
-            for (int i = 0; i < data.Count; i++)
-            {
-                for (int j = 0; j < data[0].Count; j++)
-                    debug += data[i][j].Value + "|";
-                debug += "\n";
-            }
-            MessageBox.Show(debug);
+            Tree<ArithmExpr> tree = new Tree<ArithmExpr>();
+            MessageBox.Show(tree.calculate(new ArithmExpr("A0 + A1 + B0 + B1")).ToString());
+            //string debug = "";
+            //for (int i = 0; i < Data.Items.Count; i++)
+            //{
+            //    for (int j = 0; j < Data.Items[0].Count; j++)
+            //        debug += Data.Items[i][j].Value + "|";
+            //    debug += "\n";
+            //}
+            //MessageBox.Show(debug);
         }
     }
 }
