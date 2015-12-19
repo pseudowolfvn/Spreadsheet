@@ -67,7 +67,7 @@ namespace Spreadsheet
                 while (index < binding.Length && Char.IsUpper(binding[index])) ++index;
                 string column = binding.Substring(0, index),
                     row = binding.Substring(index);
-                return BigInteger.Parse((App.Current.MainWindow as MainWindow).Data[row, column].Value);
+                return ((App.Current.MainWindow as MainWindow).Data[row, column].Value);
             }
             return value;
         }

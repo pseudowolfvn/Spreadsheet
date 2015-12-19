@@ -48,7 +48,9 @@ namespace Spreadsheet
                         case "mod":
                         case "^":
                             if (prevLexem == null 
-                                || (prevLexem.Type != LexemType.Const && prevLexem.Type != LexemType.ClosingBracket))
+                                || (prevLexem.Type != LexemType.Const 
+                                    && prevLexem.Type != LexemType.ClosingBracket 
+                                    && prevLexem.Type != LexemType.Var))
                                 throw (new BadOperator(position));
                             currLexem = new Lexem(LexemType.Binary, position, op);
                             break;

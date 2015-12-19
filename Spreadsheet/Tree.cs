@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Spreadsheet
 {
-    class Tree<ExpT> where ExpT : Expression
+    class Tree <ExpT> where ExpT : Expression
     {
         ExpT expression;
         TreeNode root;
@@ -84,7 +84,7 @@ namespace Spreadsheet
                 switch(current.Type)
                 {
                     case LexemType.Unary:
-                        setRightNode(new UnaryNode(current.Value, current.Position, this.expression.OpenedBrackets));
+                        setRightNode(new UnaryNode(current.Value, current.Position, expression.OpenedBrackets));
                         break;
                     case LexemType.Binary:
                         addBinary(current);
@@ -98,7 +98,8 @@ namespace Spreadsheet
         public object calculate(ExpT expr)
         {
             expression = expr;
-            this.parse();
+            root = null;
+            parse();
             if (root != null) return root.calculate();
             else return null;
         }

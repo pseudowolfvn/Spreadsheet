@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Numerics;
 
 namespace Spreadsheet
 {
@@ -23,12 +24,28 @@ namespace Spreadsheet
     public class Item
     {
         List<Item> dependencies;
-        bool expression;
-        string value;
-        public string Value
+        BigInteger value = 0;
+        bool expression = false;
+        string text;
+        public string Text
+        {
+            get { return text; }
+            set { this.text = value; }
+        }
+        public bool Expression
+        {
+            get { return expression; }
+            set { this.expression = value; }
+        }
+        public BigInteger Value
         {
             get { return value; }
             set { this.value = value; }
+        }
+        public List<Item> Dependencies
+        {
+            get { return dependencies; }
+            set { this.dependencies = value; }
         }
     }
     public class ItemsTable
@@ -51,6 +68,7 @@ namespace Spreadsheet
             } 
         }
     }
+    
     public partial class MainWindow : Window
     {
         ItemsTable data = new ItemsTable();
@@ -81,6 +99,10 @@ namespace Spreadsheet
             addRow();
             Excel.Rows.Add(Excel.NewRow());
             Excel.Rows.Add(Excel.NewRow());
+            UpdateDataGrid();
+        }
+        public void UpdateDataGrid()
+        {
             dataGrid.ItemsSource = Excel.AsDataView();
         }
         private void OnButton1Click(object sender, RoutedEventArgs e)
@@ -102,20 +124,27 @@ namespace Spreadsheet
 
         private void dataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
-            Data[e.Row.Header.ToString(), e.Column.Header.ToString()].Value = ((TextBox)e.EditingElement).Text;
+            Tree<ArithmExpr> tree = new Tree<ArithmExpr>();
+            string row = e.Row.Header.ToString();
+            string column = e.Column.Header.ToString();
+            Data[row, column].Text = ((TextBox)e.EditingElement).Text;
+            Data[row, column].Value = (BigInteger)tree.calculate(new ArithmExpr(Data[row, column].Text));
+            Excel.Rows[Int32.Parse(row)].SetField(column, Data[row, column].Value.ToString());
+            //UpdateDataGrid();
         }
-
-
-
+        private void dataGrig_CellGetFocus(object sender, DataGridBeginningEditEventArgs e)
+        {
+            textBox.Text = Data[e.Row.Header.ToString(), e.Column.Header.ToString()].Text;
+        }
         private void button2_Click(object sender, RoutedEventArgs e)
         {
-            Tree<ArithmExpr> tree = new Tree<ArithmExpr>();
-            MessageBox.Show(tree.calculate(new ArithmExpr("A0 + A1 + B0 + B1")).ToString());
+            // Tree<ArithmExpr> tree = new Tree<ArithmExpr>();
+            //MessageBox.Show(Spreadsheet.Tree<ArithmExpr>.calculate(new ArithmExpr("A0 - A1/A3")).ToString());
             //string debug = "";
             //for (int i = 0; i < Data.Items.Count; i++)
             //{
             //    for (int j = 0; j < Data.Items[0].Count; j++)
-            //        debug += Data.Items[i][j].Value + "|";
+            //        debug += Data.Items[i][j].Text + "|";
             //    debug += "\n";
             //}
             //MessageBox.Show(debug);
