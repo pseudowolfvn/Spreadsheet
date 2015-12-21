@@ -135,7 +135,8 @@ namespace Spreadsheet
                         result.Add(currLexem);
                 position = oldPosition;
                 LoadState(oldPosition, oldBrackets);
-                return result;
+                //return result.Distinct(new VarsComparer()).ToList();
+                return result.GroupBy(x => x.Value).Select(distinct => distinct.First()).ToList();
             }
         }
     }

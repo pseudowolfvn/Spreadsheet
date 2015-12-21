@@ -20,68 +20,7 @@ namespace Spreadsheet
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    /// 
-    public class Item
-    {
-        List<string> dependencies = new List<string>();
-        BigInteger value = 0;
-        bool expression = false;
-        string text;
-
-        public string Text
-        {
-            get { return text; }
-            set { this.text = value; }
-        }
-        public bool Expression
-        {
-            get { return expression; }
-            set { this.expression = value; }
-        }
-        public BigInteger Value
-        {
-            get { return value; }
-            set { this.value = value; }
-        }
-        public List<string> Dependencies
-        {
-            get { return dependencies; }
-            set { this.dependencies = value; }
-        }
-    }
-
-    public class ItemsTable
-    {
-        List<List<Item>> items = new List<List<Item>> { new List<Item> { new Item() } };
-        public List<List<Item>> Items { get { return items; } } 
-        public Item this[string var]
-        {
-            get
-            {
-                int index = 0;
-                while (index < var.Length && Char.IsUpper(var[index])) ++index;
-                string column = var.Substring(0, index),
-                    row = var.Substring(index);
-                return this[row, column];
-            }
-        }
-        public Item this[string row, string column]
-        {
-            get
-            {
-                int indexColumn = 0,
-                    indexRow = Int32.Parse(row);
-                int powBase = 1;
-                for (int i = column.Length - 1; i >= 0; --i)
-                {
-                    indexColumn += powBase * (column[i] - 'A');
-                    powBase *= 26;
-                }
-                return items[indexRow][indexColumn];
-            } 
-        }
-    }
-    
+    ///  
     public partial class MainWindow : Window
     {
         ItemsTable dataBase = new ItemsTable();
@@ -138,38 +77,70 @@ namespace Spreadsheet
         private void dataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
             //Tree<ArithmExpr> tree = new Tree<ArithmExpr>();
-            string row = e.Row.Header.ToString();
-            string column = e.Column.Header.ToString();
-            DataBase[row, column].Text = ((TextBox)e.EditingElement).Text;
-            ArithmExpr temp = new ArithmExpr(DataBase[row, column].Text);
-            //DataBase[row, column].Value = (BigInteger)tree.calculate(new ArithmExpr(DataBase[row, column].Text));
-            for (int i = 0; i < temp.AllVars.Count; i++)
+            string row = e.Row.Header.ToString()
+                , column = e.Column.Header.ToString()
+                , newText = ((TextBox)e.EditingElement).Text
+                , oldText = DataBase[row, column].Text;
+            ArithmExpr newExpr = new ArithmExpr(newText)
+                , oldExpr = new ArithmExpr(oldText);
+            RemoveDependencies(column + row, oldExpr.AllVars);
+            AddDependencies(column + row, newExpr.AllVars);
+            DataBase[row, column].Text = newText;
+            if (cycling(column + row, column + row, false))
             {
-                DataBase[temp.AllVars[i].Value].Dependencies.Add(column + row);
-            }
-            if (!recalculation(column + row, column + row, true))
                 MessageBox.Show("Oooops!");
+                RemoveDependencies(column + row, newExpr.AllVars);
+                AddDependencies(column + row, oldExpr.AllVars);
+                DataBase[row, column].Text = oldText;
+                UITable.Rows[Int32.Parse(row)].SetField(column, oldText);
+            }
             else
-                //DataBase[row, column].Value = (BigInteger)tree.calculate(temp);
-                //DataBase[row, column].Dependencies = temp.AllVars;
+            {
+                recalculate(column + row);
                 update(row, column);
-            //UpdateDataGrid();
+            }
+            FormulaBox.Text = DataBase[row, column].Text;
         }
-        private bool recalculation(string rootItem, string root, bool flag)
+
+        private void RemoveDependencies(string rootItem, List<Lexem> vars)
+        {
+            foreach (var x in vars)
+            {
+                DataBase[x.Value].Dependencies.Remove(rootItem);
+            }
+        }
+
+        private void AddDependencies(string rootItem, List<Lexem> vars)
+        {
+            foreach (var x in vars)
+            {
+                DataBase[x.Value].Dependencies.Add(rootItem);
+            }
+        }
+
+        private bool cycling(string rootItem, string root, bool flag)
+        {
+            if ((DataBase[rootItem].Dependencies.Count > 0) && !(flag))
+            {
+                foreach (var x in DataBase[rootItem].Dependencies)
+                    if (x == root)
+                        return true;
+                    else { flag = cycling(x, root, flag); }
+            }
+            if (DataBase[rootItem].Dependencies.Count == 0)
+                return false;
+            return flag;
+        }
+        private void recalculate(string rootItem)
         {
             Tree<ArithmExpr> tree = new Tree<ArithmExpr>();
             ArithmExpr temp = new ArithmExpr(DataBase[rootItem].Text);
             DataBase[rootItem].Value = (BigInteger)tree.calculate(temp);
-            if ((DataBase[rootItem].Dependencies.Count > 0) && (flag))
+            if ((DataBase[rootItem].Dependencies.Count > 0))
             {
                 foreach (var x in DataBase[rootItem].Dependencies)
-                    if (x == root)
-                        return false;
-                    else { flag = recalculation(x, root, flag); }
+                    recalculate(x);
             }
-            if (DataBase[rootItem].Dependencies.Count == 0)
-                return true;
-            return flag;
 
         }
 
@@ -178,14 +149,12 @@ namespace Spreadsheet
             UITable.Rows[Int32.Parse(row)].SetField(column, DataBase[row, column].Value.ToString());
             foreach(var x in DataBase[row, column].Dependencies)
             {
-                int index = 0;
-                while (index < x.Length && Char.IsUpper(x[index])) ++index;
-                update(x.Substring(index), x.Substring(0, index));
+                update(ItemsTable.GetRow(x), ItemsTable.GetColumn(x));
             }
         }
         private void dataGrig_CellGetFocus(object sender, DataGridBeginningEditEventArgs e)
         {
-            textBox.Text = DataBase[e.Row.Header.ToString(), e.Column.Header.ToString()].Text;
+            FormulaBox.Text = DataBase[e.Row.Header.ToString(), e.Column.Header.ToString()].Text;
         }
         private void button2_Click(object sender, RoutedEventArgs e)
         {
