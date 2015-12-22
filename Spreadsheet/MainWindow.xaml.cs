@@ -52,7 +52,6 @@ namespace Spreadsheet
             UITable.Rows.Add(UITable.NewRow());
             UITable.Rows.Add(UITable.NewRow());
             UpdateDataGrid();
-            MessageBox.Show(ItemsTable.FromIntToColumn(28).ToString());
         }
         public void UpdateDataGrid()
         {

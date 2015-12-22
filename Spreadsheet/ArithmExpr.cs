@@ -71,6 +71,10 @@ namespace Spreadsheet
                                     currLexem = new Lexem(LexemType.Binary, position, op);
                             else currLexem = new Lexem(LexemType.Unary, position, op + "U");
                             break;
+                        case "false":
+                        case "true":
+                            currLexem = new Lexem(LexemType.Const, position, op);
+                            break;
                         case "(":
                             currLexem = new Lexem(LexemType.OpenBracket, position);
                             break;
@@ -141,7 +145,6 @@ namespace Spreadsheet
                         result.Add(currLexem);
                 position = oldPosition;
                 LoadState(oldPosition, oldBrackets);
-                //return result.Distinct(new VarsComparer()).ToList();
                 return result.GroupBy(x => x.Value).Select(distinct => distinct.First()).ToList();
             }
         }
