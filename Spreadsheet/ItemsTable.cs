@@ -10,7 +10,7 @@ namespace Spreadsheet
     public class Item
     {
         List<string> dependencies = new List<string>();
-        BigInteger value = 0;
+        string value = "0";
         bool expression = false;
         string text = "";
 
@@ -24,7 +24,7 @@ namespace Spreadsheet
             get { return expression; }
             set { this.expression = value; }
         }
-        public BigInteger Value
+        public string Value
         {
             get { return value; }
             set { this.value = value; }

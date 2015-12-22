@@ -7,7 +7,7 @@ using System.Numerics;
 
 namespace Spreadsheet
 {
-    enum ArithmOps { Plus, Minus, Multiply, Div, Mod, UnaryMinus, UnaryPlus, Dec, Inc, Pow };
+    enum ArithmOps { Plus, Minus, Multiply, Div, Mod, UnaryMinus, UnaryPlus, Dec, Inc, Pow, Not, Or, And, Equal, Greater, Less };
     class ArithmExpr : Expression
     {
         void skipBlanks()
@@ -47,6 +47,11 @@ namespace Spreadsheet
                         case "%":
                         case "mod":
                         case "^":
+                        case "<":
+                        case ">":
+                        case "=":
+                        case "and":
+                        case "or":
                             if (prevLexem == null 
                                 || (prevLexem.Type != LexemType.Const 
                                     && prevLexem.Type != LexemType.ClosingBracket 
@@ -58,6 +63,7 @@ namespace Spreadsheet
                         case "-":
                         case "inc":
                         case "dec":
+                        case "not":
                             if (prevLexem != null 
                                 && (prevLexem.Type == LexemType.Const 
                                     || prevLexem.Type == LexemType.ClosingBracket

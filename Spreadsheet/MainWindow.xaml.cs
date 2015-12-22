@@ -83,21 +83,32 @@ namespace Spreadsheet
                 , oldText = DataBase[row, column].Text;
             ArithmExpr newExpr = new ArithmExpr(newText)
                 , oldExpr = new ArithmExpr(oldText);
-            RemoveDependencies(column + row, oldExpr.AllVars);
-            AddDependencies(column + row, newExpr.AllVars);
-            DataBase[row, column].Text = newText;
-            if (cycling(column + row, column + row, false))
+            List<Lexem> oldVars, newVars;
+            oldVars = oldExpr.AllVars;
+            try
             {
-                MessageBox.Show("Oooops!");
-                RemoveDependencies(column + row, newExpr.AllVars);
-                AddDependencies(column + row, oldExpr.AllVars);
+                newVars = newExpr.AllVars;
+                RemoveDependencies(column + row, oldExpr.AllVars);
+                AddDependencies(column + row, newExpr.AllVars);
+                DataBase[row, column].Text = newText;
+                if (cycling(column + row, column + row, false))
+                {
+                    MessageBox.Show("Oooops!");
+                    RemoveDependencies(column + row, newExpr.AllVars);
+                    AddDependencies(column + row, oldExpr.AllVars);
+                    throw new BadCycle(column + row);
+                }
+                else
+                {
+                    recalculate(column + row);
+                    update(row, column);
+                }
+            }
+            catch (Exception err)
+            {
+                MessageBox.Show(err.Info);
                 DataBase[row, column].Text = oldText;
                 UITable.Rows[Int32.Parse(row)].SetField(column, oldText);
-            }
-            else
-            {
-                recalculate(column + row);
-                update(row, column);
             }
             FormulaBox.Text = DataBase[row, column].Text;
         }
@@ -135,7 +146,9 @@ namespace Spreadsheet
         {
             Tree<ArithmExpr> tree = new Tree<ArithmExpr>();
             ArithmExpr temp = new ArithmExpr(DataBase[rootItem].Text);
-            DataBase[rootItem].Value = (BigInteger)tree.calculate(temp);
+            dynamic result = tree.calculate(temp);
+            if (result != null) DataBase[rootItem].Value = result.ToString();
+            else return;
             if ((DataBase[rootItem].Dependencies.Count > 0))
             {
                 foreach (var x in DataBase[rootItem].Dependencies)
@@ -152,9 +165,14 @@ namespace Spreadsheet
                 update(ItemsTable.GetRow(x), ItemsTable.GetColumn(x));
             }
         }
-        private void dataGrig_CellGetFocus(object sender, DataGridBeginningEditEventArgs e)
+        private void dataGrig_CurrentCellChanged(object sender, EventArgs e)
         {
-            FormulaBox.Text = DataBase[e.Row.Header.ToString(), e.Column.Header.ToString()].Text;
+            DataGridCellInfo cellInfo = dataGrid.CurrentCell;
+            if (cellInfo.IsValid)
+            {
+                string row = ((DataGridRow)dataGrid.ItemContainerGenerator.ContainerFromItem(cellInfo.Item)).GetIndex().ToString();
+                FormulaBox.Text = DataBase[row, cellInfo.Column.Header.ToString()].Text;
+            }
         }
         private void button2_Click(object sender, RoutedEventArgs e)
         {
