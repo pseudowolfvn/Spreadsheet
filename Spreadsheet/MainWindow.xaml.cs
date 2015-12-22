@@ -25,7 +25,7 @@ namespace Spreadsheet
     {
         ItemsTable dataBase = new ItemsTable();
         DataTable UITable = new DataTable();
-        char column = 'A';
+        string column = "A";
         public ItemsTable DataBase { get { return dataBase; } }
         public void addRow()
         {
@@ -46,12 +46,13 @@ namespace Spreadsheet
         {
             InitializeComponent();
             addColumn();
-            UITable.Columns.Add((column++).ToString());
-            UITable.Columns.Add((column++).ToString());
+            UITable.Columns.Add(ItemsTable.ColumnInc(ref column));
+            UITable.Columns.Add(ItemsTable.ColumnInc(ref column));
             addRow();
             UITable.Rows.Add(UITable.NewRow());
             UITable.Rows.Add(UITable.NewRow());
             UpdateDataGrid();
+            MessageBox.Show(ItemsTable.FromIntToColumn(28).ToString());
         }
         public void UpdateDataGrid()
         {
@@ -65,7 +66,7 @@ namespace Spreadsheet
         }
         private void OnButton2Click(object sender, RoutedEventArgs e)
         {
-            UITable.Columns.Add((column++).ToString());
+            UITable.Columns.Add(ItemsTable.ColumnInc(ref column));
             dataGrid.ItemsSource = UITable.AsDataView();
             addColumn();
         }

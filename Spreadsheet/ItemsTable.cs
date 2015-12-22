@@ -53,14 +53,8 @@ namespace Spreadsheet
         {
             get
             {
-                int indexColumn = 0,
+                int indexColumn = FromColumnToInt(column),
                     indexRow = Int32.Parse(row);
-                int powBase = 1;
-                for (int i = column.Length - 1; i >= 0; --i)
-                {
-                    indexColumn += powBase * (column[i] - 'A');
-                    powBase *= 26;
-                }
                 return items[indexRow][indexColumn];
             }
         }
@@ -75,6 +69,36 @@ namespace Spreadsheet
             int index = 0;
             while (index < fullPath.Length && Char.IsUpper(fullPath[index])) ++index;
             return fullPath.Substring(0, index);
+        }
+        public static int FromColumnToInt(string column)
+        {
+            int powBase = 1, indexColumn = 0;
+            for (int i = column.Length - 1; i >= 0; --i)
+            {
+                indexColumn += powBase * (column[i] - 'A');
+                powBase *= 26;
+            }
+            return indexColumn;
+        }
+        public static string FromIntToColumn(int column)
+        {
+            string result = "";
+            while (column > 0)
+            {
+                char mod = (char)((column % 26) + 'A');
+                result += mod.ToString();
+                column /= 26;
+            }
+            char[] toReverse = result.ToArray();
+            Array.Reverse(toReverse);
+            return new string(toReverse);
+        }
+        public static string ColumnInc(ref string column)
+        {
+            int index = FromColumnToInt(column);
+            string oldColumn = column;
+            column = FromIntToColumn(++index);
+            return oldColumn;
         }
     }
 }
